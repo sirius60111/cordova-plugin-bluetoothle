@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import java.lang.reflect.Method;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -2750,6 +2752,17 @@ public class BluetoothLePlugin extends CordovaPlugin {
     }
   }
 
+  private void clearDeviceCache(BluetoothGatt gatt) {
+    try {
+      final Method refresh = gatt.getClass().getMethod("refresh");
+      if (refresh != null) {
+        refresh.invoke(gatt);
+      }
+    } catch (Exception e) {
+      Log.d("BLE", "Clear device cache exception: " + e.getMessage());  
+    }
+  }
+
   @Override
   public void onDestroy() {
     super.onDestroy();
@@ -3856,6 +3869,7 @@ public class BluetoothLePlugin extends CordovaPlugin {
         if (operation != null && operation.device != null && operation.device.getAddress().equals(address)) {
           queueRemove();
         }
+        clearDeviceCache(gatt);
       }
 
       HashMap<Object, Object> connection = connections.get(address);
